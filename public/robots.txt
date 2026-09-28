@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Utility pages with no search value.
+Disallow: /image-credits
+
+Sitemap: https://www.maid4condos.com/sitemap.xml

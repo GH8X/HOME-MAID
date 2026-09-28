@@ -1,0 +1,555 @@
+/* ==========================================================================
+   Cinematic opening sequence + homepage reveal
+   Loaded last, after the design tokens, so it can reference them.
+
+   Everything here animates only transform, opacity and clip-path. Those are
+   the three properties the compositor can animate without asking layout or
+   paint, which is what keeps a full-screen overlay at 60fps on a phone.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Overlay
+   -------------------------------------------------------------------------- */
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(120% 90% at 50% 8%, #0d4a44 0%, transparent 58%),
+    linear-gradient(168deg, #072b28 0%, #052220 46%, #031615 100%);
+  animation: intro-veil 700ms var(--ease) both;
+}
+
+.intro--leaving {
+  animation: intro-collapse 800ms var(--ease-out) forwards;
+}
+
+/* Ambient light. Two slow blooms that drift in opposite directions give the
+   flat green field a sense of depth without any texture or image weight. */
+.intro__bloom {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+  opacity: 0;
+}
+
+.intro__bloom--a {
+  top: -22vmax;
+  left: 50%;
+  width: 74vmax;
+  height: 74vmax;
+  margin-left: -37vmax;
+  background: radial-gradient(circle, rgba(63, 174, 154, 0.34), transparent 66%);
+  animation: intro-bloom-a 3000ms var(--ease-out) both;
+}
+
+.intro__bloom--b {
+  bottom: -30vmax;
+  left: 50%;
+  width: 88vmax;
+  height: 88vmax;
+  margin-left: -44vmax;
+  background: radial-gradient(circle, rgba(201, 154, 68, 0.16), transparent 64%);
+  animation: intro-bloom-b 3400ms var(--ease-out) both;
+}
+
+/* Pulls the eye to the centre and keeps the type edge crisp against the glow. */
+.intro__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(112% 78% at 50% 50%, transparent 42%, rgba(2, 14, 13, 0.72) 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Centre stage
+   -------------------------------------------------------------------------- */
+
+.intro__stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 0 6vw;
+  text-align: center;
+  transform-style: preserve-3d;
+  animation: intro-stage-out 800ms var(--ease-out) forwards;
+}
+
+.intro--leaving .intro__stage {
+  animation: intro-stage-out 800ms var(--ease-out) forwards;
+}
+
+/* Logo mark ---------------------------------------------------------- */
+
+.intro__mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(84px, 16vmin, 120px);
+  aspect-ratio: 1;
+}
+
+/* Soft halo behind the mark, so the logo appears lit rather than pasted on. */
+.intro__mark-glow {
+  position: absolute;
+  inset: -46%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(191, 228, 220, 0.3), transparent 62%);
+  filter: blur(18px);
+  opacity: 0;
+  animation: intro-halo 2200ms 320ms var(--ease-out) both;
+}
+
+.intro__mark-svg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 24%;
+  opacity: 0;
+  /* Starts tipped back and small, settles forward — the "moves toward you". */
+  transform: perspective(1100px) rotateX(22deg) translateY(26px) scale(0.86);
+  animation: intro-mark 2200ms 350ms var(--ease-out) both;
+  filter: drop-shadow(0 26px 46px rgba(2, 20, 18, 0.55));
+}
+
+/* A single pass of light across the mark. Reads as a reflection, not a shine. */
+.intro__sweep {
+  position: absolute;
+  inset: -18% -34%;
+  background: linear-gradient(
+    104deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.62) 48%,
+    rgba(255, 255, 255, 0.2) 54%,
+    transparent 66%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transform: translateX(-130%) skewX(-12deg);
+  animation: intro-sweep 1500ms 700ms var(--ease) both;
+}
+
+/* Wordmark ------------------------------------------------------------ */
+
+.intro__word {
+  margin: clamp(1.4rem, 3.4vmin, 2.4rem) 0 0;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 9.2vmin, 5.4rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.005em;
+  color: #f4f1e8;
+  text-shadow: 0 12px 40px rgba(2, 20, 18, 0.5);
+}
+
+.intro__letter {
+  display: inline-block;
+  opacity: 0;
+  transform: perspective(900px) translateY(0.5em) rotateX(-42deg);
+  transform-origin: 50% 100%;
+  animation: intro-letter 780ms calc(760ms + var(--i) * 34ms) var(--ease-out) both;
+}
+
+.intro__rule {
+  display: block;
+  width: min(260px, 46vw);
+  height: 1px;
+  margin-top: clamp(1rem, 2.4vmin, 1.6rem);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201, 154, 68, 0.75) 22%,
+    rgba(191, 228, 220, 0.9) 50%,
+    rgba(201, 154, 68, 0.75) 78%,
+    transparent
+  );
+  transform: scaleX(0);
+  animation: intro-rule 1100ms 1150ms var(--ease-out) both;
+}
+
+.intro__tag {
+  margin: clamp(0.7rem, 1.8vmin, 1.1rem) 0 0;
+  font-size: clamp(0.66rem, 1.55vmin, 0.78rem);
+  font-weight: 500;
+  letter-spacing: 0.44em;
+  text-transform: uppercase;
+  color: rgba(214, 233, 228, 0.72);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: intro-tag 1000ms 1350ms var(--ease-out) both;
+}
+
+/* --------------------------------------------------------------------------
+   Skip
+   -------------------------------------------------------------------------- */
+
+.intro__skip {
+  position: absolute;
+  z-index: 2;
+  right: clamp(1.1rem, 3vw, 2.4rem);
+  bottom: clamp(1.1rem, 3vw, 2.4rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.2rem;
+  border: 0;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(226, 240, 236, 0.72);
+  cursor: pointer;
+  opacity: 0;
+  animation: intro-skip-in 700ms 900ms var(--ease) both;
+  transition: color var(--dur) var(--ease);
+}
+
+.intro__skip:hover,
+.intro__skip:focus-visible {
+  color: #f4f1e8;
+}
+
+.intro__skip-line {
+  display: block;
+  width: 34px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+  transform-origin: left center;
+  transition: transform var(--dur) var(--ease);
+}
+
+.intro__skip:hover .intro__skip-line,
+.intro__skip:focus-visible .intro__skip-line {
+  transform: scaleX(1.45);
+}
+
+/* --------------------------------------------------------------------------
+   Exit — the overlay pulls apart from the centre like a curtain
+   -------------------------------------------------------------------------- */
+
+@keyframes intro-collapse {
+  0% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: scale(1);
+  }
+  62% {
+    opacity: 1;
+    clip-path: inset(44% 0 44% 0);
+    transform: scale(1.035);
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(50% 0 50% 0);
+    transform: scale(1.07);
+    visibility: hidden;
+  }
+}
+
+@keyframes intro-stage-out {
+  0% {
+    opacity: 1;
+    transform: perspective(1200px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: perspective(1200px) scale(1.16);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Entrance
+   -------------------------------------------------------------------------- */
+
+@keyframes intro-veil {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes intro-bloom-a {
+  0% {
+    opacity: 0;
+    transform: scale(0.72) translateY(6vmin);
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.85;
+    transform: scale(1.06) translateY(-3vmin);
+  }
+}
+
+@keyframes intro-bloom-b {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes intro-halo {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1.14);
+  }
+}
+
+@keyframes intro-mark {
+  0% {
+    opacity: 0;
+    transform: perspective(1100px) rotateX(22deg) translateY(26px) scale(0.86);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1100px) rotateX(0deg) translateY(0) scale(1.04);
+  }
+}
+
+@keyframes intro-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-130%) skewX(-12deg);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(130%) skewX(-12deg);
+  }
+}
+
+@keyframes intro-letter {
+  0% {
+    opacity: 0;
+    transform: perspective(900px) translateY(0.5em) rotateX(-42deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(900px) translateY(0) rotateX(0deg);
+  }
+}
+
+@keyframes intro-rule {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes intro-tag {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes intro-skip-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Homepage reveal
+   Applied only while the shell carries --revealing, i.e. only on the one
+   hand-off after the overlay clears. Normal navigations are untouched.
+   -------------------------------------------------------------------------- */
+
+.app-shell--revealing .site-header {
+  animation: hero-in 700ms 40ms var(--ease-out) both;
+}
+
+.app-shell--revealing .hero__copy > *,
+.app-shell--revealing .hero__media {
+  animation: hero-in 820ms var(--ease-out) both;
+}
+
+.app-shell--revealing .hero__copy > *:nth-child(1) {
+  animation-delay: 90ms;
+}
+.app-shell--revealing .hero__copy > *:nth-child(2) {
+  animation-delay: 170ms;
+}
+.app-shell--revealing .hero__copy > *:nth-child(3) {
+  animation-delay: 250ms;
+}
+.app-shell--revealing .hero__copy > *:nth-child(4) {
+  animation-delay: 330ms;
+}
+.app-shell--revealing .hero__copy > *:nth-child(5) {
+  animation-delay: 410ms;
+}
+.app-shell--revealing .hero__media {
+  animation-delay: 140ms;
+}
+
+/* The hero photograph resolves from a slight push-in, so the page feels like
+   a camera pulling back rather than a div being unhidden. */
+.app-shell--revealing .hero__figure img {
+  animation: hero-figure 1700ms 100ms var(--ease-out) both;
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-figure {
+  from {
+    opacity: 0;
+    transform: scale(1.07);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Small screens — same sequence, fewer pixels of blur and a shorter run
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 767px), (max-height: 620px) {
+  .intro__bloom {
+    filter: blur(38px);
+  }
+
+  .intro__bloom--a {
+    width: 120vmax;
+    height: 120vmax;
+    margin-left: -60vmax;
+  }
+
+  .intro__bloom--b {
+    width: 130vmax;
+    height: 130vmax;
+    margin-left: -65vmax;
+  }
+
+  .intro__mark-svg {
+    filter: drop-shadow(0 16px 30px rgba(2, 20, 18, 0.5));
+  }
+
+  .intro__sweep {
+    animation-duration: 1200ms;
+  }
+
+  .intro__word {
+    letter-spacing: 0.01em;
+  }
+
+  .intro__tag {
+    letter-spacing: 0.34em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion — branding stays, choreography goes
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .intro {
+    animation: intro-veil 320ms linear both;
+  }
+
+  .intro__bloom,
+  .intro__sweep {
+    display: none;
+  }
+
+  .intro__mark-glow,
+  .intro__mark-svg,
+  .intro__word,
+  .intro__letter,
+  .intro__rule,
+  .intro__tag,
+  .intro__skip {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .intro__rule {
+    transform: scaleX(1);
+  }
+
+  .intro--leaving {
+    animation: intro-fade 400ms linear forwards;
+  }
+
+  .intro--leaving .intro__stage {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .app-shell--revealing .site-header,
+  .app-shell--revealing .hero__copy > *,
+  .app-shell--revealing .hero__media,
+  .app-shell--revealing .hero__figure img {
+    animation: none;
+  }
+}
+
+@keyframes intro-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

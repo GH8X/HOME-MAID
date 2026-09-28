@@ -1,219 +1,157 @@
-# Maid4Condos — website
+# Maid4Condos
 
-A complete rebuild of [maid4condos.com](https://www.maid4condos.com/) as a fast, mobile-first,
-conversion-focused website for a Toronto condo cleaning company.
+A new website for **Maid4Condos**, a family run condo cleaning company in
+Liberty Village, Toronto, in business since 2014.
 
-Built with **HTML5, CSS3, vanilla JavaScript, PHP 7.4+ and MySQL** — no frameworks, no build step,
-no Composer dependencies. Upload it to any standard PHP host and it runs.
+Built with **Vite + React + TypeScript**. It is a plain static site: there is no
+database, no server and no build-time service to configure. `npm run build`
+produces `dist/`, and that folder is the whole website.
 
-**Requirements:** PHP 7.4 or newer (developed and tested on PHP 8.1) with the `pdo_mysql`
-extension, MySQL 5.7+ / MariaDB 10.3+, and `mod_rewrite` for clean URLs. `mbstring` is used when
-present and falls back to single-byte handling when it is not. MySQL is optional — without it the
-site serves the verified built-in content and simply cannot store quote requests.
+## Commands
 
----
-
-## Quick start
-
-### 1. Upload the files
-
-Copy the whole project to your web root (or a subdirectory). The only folder that must be writable
-is `/uploads` (and `/storage` if your host restricts session storage).
-
-### 2. Point the site at your domain
-
-Either edit `config/config.php` (`app.base_url`) or create `config/config.local.php`:
-
-```php
-<?php
-return [
-    'app' => ['base_url' => 'https://www.maid4condos.com'],
-];
+```bash
+npm install
+npm run dev        # local dev server
+npm run build      # typecheck + production build into dist/
+npm run preview    # serve the built output
+npm run typecheck  # tsc -b --noEmit
 ```
 
-`base_url` also drives canonical URLs, Open Graph tags, structured data and the sitemap.
-Leave it `null` and the site auto-detects the host.
+## Routes
 
-### 3. Connect MySQL (optional but recommended)
-
-```php
-<?php
-// config/config.local.php  — never commit this file
-return [
-    'app' => ['env' => 'production', 'debug' => false],
-    'db'  => [
-        'enabled' => true,
-        'host'    => 'localhost',
-        'name'    => 'your_database',
-        'user'    => 'your_user',
-        'pass'    => 'your_password',
-    ],
-];
-```
-
-Or set the environment variables `M4C_DB_HOST`, `M4C_DB_NAME`, `M4C_DB_USER`, `M4C_DB_PASS`.
-
-Then open **`/database/install.php`** once. It will:
-
-1. create the tables from `database/schema.sql`,
-2. import the real Maid4Condos content (services, FAQs, testimonials, areas) into the database,
-3. create your administrator account.
-
-**Delete the `/database` folder when you are done.**
-
-> The website works perfectly *without* a database. Every page falls back to the verified content in
-> `includes/seed.php`, so nothing is ever blank or placeholder.
-
-### 4. Sign in to the admin panel
-
-`https://your-domain.com/admin`
-
-The administrator system is completely separate from the public website — only rows in the `admins`
-table can sign in, and passwords are stored with `password_hash()`. There is no public login or
-signup anywhere on the site.
-
----
-
-## What you can manage in the admin panel
-
-| Screen | What it controls |
+| Route | Page |
 | --- | --- |
-| **Overview** | Content counts, latest enquiries, SEO/analytics status, content import |
-| **Quote requests** | Every submitted quote with status tracking, notes and CSV export |
-| **Messages** | Contact form submissions |
-| **Services** | Full CRUD: descriptions, checklists, pricing, imagery, SEO metadata, publish state |
-| **Page sections** | Homepage hero / trust / why-us / how-it-works / final CTA and the About page |
-| **FAQs** | Categories, questions, answers, ordering, publish state |
-| **Testimonials** | Reviews, location, service, optional rating, publish state |
-| **Service areas** | Neighbourhoods shown on the site and in structured data |
-| **Add-ons** | Extras offered in the quote form |
-| **Schedules** | AutoPilot frequencies and their discounts |
-| **Navigation** | Header and footer links |
-| **Media** | Upload images (JPG/PNG/WebP/SVG) and manage the library |
-| **Settings & SEO** | Business details, meta defaults, contact info, social links, guarantees, GA4, form copy |
-| **Administrators** | Owner-only account management |
+| `/` | Homepage |
+| `/services` | All six cleaning packages, comparison table, add-ons, FAQs |
+| `/services/basic-cleaning` | Basic Clean |
+| `/services/basic-plus` | Basic Plus |
+| `/services/deep-cleaning` | Deep Clean |
+| `/services/deep-plus` | Deep Plus |
+| `/services/move-in-move-out` | Move In / Move Out |
+| `/services/recurring-cleaning` | Recurring Cleaning (AutoPilot) |
+| `/about` | About, our promise, credentials, what we do not do |
+| `/faq` | Every published question, by category |
+| `/testimonials` | Real client reviews, People Like Us, make a review |
+| `/contact` | Phone, email, map, service areas, important customer information |
+| `/get-a-quote` | Five-step booking form |
+| `/privacy-policy`, `/terms` | Legal |
+| `/image-credits` | Photography licences |
 
-Every list supports **add, edit, delete, publish and unpublish**.
+## Where the content lives
 
----
+Everything the site displays is a typed module in `src/data`. Editing one of
+these files is the only way to change the website, and nothing else needs to
+know:
 
-## Tracking conversions with Google Analytics 4
-
-1. Create a GA4 property and copy the measurement ID (`G-XXXXXXXXXX`).
-2. Paste it into **Admin → Settings → Analytics → Google Analytics 4 measurement ID**.
-
-Events that are reported automatically (nothing is hardcoded in the templates):
-
-| Event | Fires when |
+| File | Holds |
 | --- | --- |
-| `quote_form_submit` | The quote thank-you screen is shown |
-| `contact_form_submit` | The contact form is submitted |
-| `phone_click` | Any `tel:` link is clicked |
-| `email_click` | Any `mailto:` link is clicked |
-| `quote_cta_click` | A “Get a quote” call-to-action is clicked |
-| `service_view` | A service detail page is viewed |
-| `map_click` | A directions link is clicked |
+| `src/data/settings.ts` | Business facts, contact details, opening hours, review counts, social profiles, every homepage headline and paragraph |
+| `src/data/services.ts` | The six packages (checklists, benefits, FAQs), the add-ons and the AutoPilot frequencies |
+| `src/data/faqs.ts` | All published FAQs and their categories |
+| `src/data/testimonials.ts` | Client reviews |
+| `src/data/peopleLikeUs.ts` | Recognition wall, review destinations, survey link |
+| `src/data/siteContent.ts` | Navigation, service areas, the service video, important customer information |
+| `src/data/pages.ts` | About story plus the privacy and terms copy |
+| `src/data/media.ts` | The photography manifest — sizes, alt text, credits |
 
----
+Components read it all through `useContent()` (`src/services/contentService.tsx`),
+so a headline, a package or an area is edited in exactly one place.
 
-## Transactional email
+### No prices
 
-Quote requests and contact messages are emailed to the address in **Settings → Contact details**.
+The public site **never displays a price**. Where the old site showed one, the
+site now shows **BOOK NOW**, and pricing is confirmed with the office against
+the size and condition of the home. There is no `priceRange` or `offers`
+structured data either — structured data must never claim more than the page.
 
-Two transports are supported (`Settings` or `config.local.php`):
+## The opening experience
 
-* **`mail`** (default) — uses PHP `mail()`. Works on nearly every shared host, and is what this
-  build ships with.
-* **`elastic`** (optional upgrade) — Elastic Email v4 HTTP API for better deliverability,
-  no Composer required. Not enabled by default; switch to it later if inbox placement needs it.
+On a fresh browsing session the site opens with a full-screen brand sequence:
+the Maid4Condos mark fades up in CSS 3D, a light sweeps across it, the wordmark
+rises letter by letter, and the overlay then pulls apart like a curtain to
+reveal the homepage, which has been mounted and painted behind it the whole
+time. It is roughly 3.4 seconds on desktop and shorter on mobile.
 
-To enable Elastic Email later:
+- Pure CSS 3D (`perspective` + `rotateX` + `translateZ`) — no WebGL, no extra dependency
+- `sessionStorage` flag, so it plays once per session and never on navigation
+- A discreet **Skip** button
+- `prefers-reduced-motion` collapses it to a short plain fade
+- The page behind is `inert` while the overlay is up, so nothing is tabbable early
+- The wordmark is a `<p>` inside an `aria-hidden` container, so every page still has exactly one `<h1>`
 
-1. Create an account and generate an API key.
-2. Set `M4C_MAIL_TRANSPORT=elastic` and `M4C_MAIL_API_KEY=your-key` in the server environment
-   (or in `config/config.local.php`), and verify your sending domain with the provider.
+## Forms
 
-Every enquiry is also saved to MySQL, so nothing is ever lost if email delivery fails.
+`/get-a-quote` is a five-step wizard (details → property → cleaning → schedule →
+finishing touches) with live validation and a running summary. Both it and the
+contact form work out of the box, with no service to configure.
 
----
+**How a submission works.** The site is static, so nothing is stored and nothing
+is emailed on the visitor's behalf. A successful submission is turned into a
+complete written summary which the visitor sends:
 
-## Project structure
+- **Send your request** opens their mail client with every detail already written out (`mailto:` to the bookings inbox)
+- **Copy the summary** puts the same text on the clipboard
+- The full text is also shown under *Read your request*, so it can never be lost
+- The phone number and email are one tap away
 
-```
-/                        Public pages (extensionless URLs via .htaccess)
-├── index.php            Homepage
-├── about.php  faq.php  testimonials.php  contact.php  get-a-quote.php
-├── privacy-policy.php  terms.php  image-credits.php  404.php  sitemap.php
-├── services/
-│   ├── index.php        /services
-│   ├── _service.php     Shared controller for a single package
-│   └── basic-cleaning/  basic-plus/  deep-cleaning/  deep-plus/
-│       move-in-move-out/  recurring-cleaning/   → each with an index.php
-├── admin/               Administrator panel (separate from the public site)
-│   └── includes/        admin bootstrap, layout, CRUD engine
-├── assets/
-│   ├── css/main.css     Public design system
-│   ├── css/admin.css    Admin design system
-│   ├── js/main.js       Navigation, accordions, forms, analytics events
-│   ├── js/admin.js      Admin interactions
-│   └── images/          Photography + brand marks (see CREDITS.md)
-├── components/          Reusable partials: header, footer, hero, service card,
-│                        FAQ accordion, testimonial, CTA, forms, breadcrumbs, icons
-├── config/              config.php, database.php (PDO), config.local.php (yours)
-├── database/            schema.sql + one-time installer
-├── includes/            bootstrap, helpers, security, auth, content repository,
-│                        seeder, SEO, analytics, mailer, form handlers
-├── pages/               Page views rendered by the controllers
-├── storage/             Runtime state (form throttling). Not web accessible.
-├── uploads/             Uploaded media. Script execution disabled.
-├── robots.txt  sitemap.xml
-└── .htaccess
-```
+**Optional form service.** To have submissions land in an inbox automatically,
+set `VITE_FORM_ENDPOINT` to a form-endpoint URL (Formspree, Web3Forms,
+Formspark and similar). The same payload is then POSTed as JSON alongside the
+`mailto:` handoff. No code change is required.
 
----
+## Analytics
 
-## Security
+Google Analytics 4 is wired up but entirely optional. Set the measurement ID in
+`src/data/settings.ts` (`ga4_measurement_id`) or via `VITE_GA4_MEASUREMENT_ID`.
+A blank ID loads no tag at all — no script, no cookies.
 
-* **Prepared statements everywhere** (PDO, `ATTR_EMULATE_PREPARES = false`) — no string-built SQL.
-* **CSRF tokens** on every state-changing form, verified with `hash_equals()`.
-* **Output escaping** through `e()` (`htmlspecialchars` with `ENT_QUOTES`).
-* **Admin authentication** using `password_hash()` / `password_verify()`, session fingerprinting,
-  idle timeout, `session_regenerate_id()` on sign-in, and login throttling.
-* **Upload validation** — real MIME check via `finfo`, extension allow-list, size limit, minimum
-  dimensions, SVG sanitiser, randomised filenames, and script execution disabled in `/uploads`.
-* **Spam protection** — honeypot field, minimum submit time, per-bucket throttling.
-* **Hardened headers** — Content Security Policy, `X-Content-Type-Options`, `X-Frame-Options`,
-  `Referrer-Policy`, `Permissions-Policy`, HSTS on HTTPS.
-* **Directory protection** — `/config`, `/includes`, `/pages`, `/components` and `/storage` are
-  blocked at the web server level, as are `.sql`, `.md`, `.log` and `.ini` files.
+Events: `quote_form_start`, `quote_form_step`, `quote_form_submit`,
+`contact_form_submit`, `enquiry_send`, `enquiry_copy`, `phone_click`,
+`email_click`, `quote_cta_click`, `service_view`, `service_card_click`,
+`video_play`, `review_click`, `recognition_click`, `map_click`.
 
----
+## SEO
 
-## Performance & SEO
+Every page sets a unique title, meta description, canonical URL, Open Graph and
+Twitter tags through `src/hooks/useSeo.ts`, and emits its own JSON-LD:
+`LocalBusiness` + `CleaningService` + `HomeAndConstructionBusiness`,
+`Service`, `FAQPage` and `BreadcrumbList`. `public/robots.txt` and
+`public/sitemap.xml` are part of the build. There is deliberately no
+`aggregateRating` — the company publishes review counts, not an average score.
 
-* Mobile-first CSS (~1 file, no framework), deferred vanilla JS (~1 file), zero libraries.
-* Responsive `<picture>` output when AVIF/WebP siblings exist next to a JPEG — drop
-  `cleaning-windows.avif` beside `cleaning-windows.jpg` and it is served automatically.
-* `srcset`/`sizes`, explicit `width`/`height` (no layout shift), native lazy loading, one eager
-  hero image with `fetchpriority="high"`.
-* Browser caching and gzip via `.htaccess`, plus `preconnect` + non-blocking font loading.
-* Per-page titles, meta descriptions, canonicals, Open Graph and Twitter cards.
-* Structured data: `LocalBusiness` (address, area served, opening hours, offer catalogue),
-  `Service`, `FAQPage`, `BreadcrumbList`.
-* Dynamic `/sitemap.xml` generated from live content + `robots.txt`.
+## Performance
 
----
+- Every route is lazily loaded, so the homepage never pays for the FAQs and vice versa
+- Vendor code is split into its own chunk so it caches independently of content
+- Every photograph ships as **WebP first** through `<picture>`, with the JPEG as
+  the fallback (roughly 40% smaller payload)
+- The service video is a poster image until it is pressed; no third-party player
+  loads on page load
+- Intrinsic `width`/`height` on every image, so nothing shifts as it loads
+- Four runtime dependencies: `react`, `react-dom`, `react-router-dom` and nothing else
 
-## Notes for whoever maintains this next
+## Accessibility
 
-* **Legal copy**: `pages/privacy.php` and `pages/terms.php` are written from the policies published
-  on the existing site. Have them reviewed before launch.
-* **Photography**: the bundled images are licensed from Wikimedia Commons — attribution is on
-  `/image-credits` (kept out of search results) and in `assets/images/CREDITS.md`. Replace them with
-  your own team and client photos by dropping files into `assets/images/` using the same filenames,
-  or upload through **Admin → Media**.
-* **Content rule**: every fact on the site (services, checklists, prices, service areas, FAQs,
-  testimonials, guarantees, insurance) comes from the published Maid4Condos website. Nothing was
-  invented — please keep it that way when editing.
-* Clean URLs need `mod_rewrite`. Without it, add the `.php` extension to the URL and everything
-  still works.
+Skip link, visible focus rings, keyboard-trapped mobile drawer, `aria-current`
+on navigation, real `<button>` elements for the video and accordions, alt text
+on every photograph, and a full `prefers-reduced-motion` path through the intro
+and the reveals.
+
+## Photography
+
+Every photograph is used under a licence recorded in `src/data/media.ts` and
+listed on `/image-credits`. Replace one by dropping a file into
+`public/images/`, adding its WebP twin, and updating the manifest entry.
+
+## Content honesty
+
+Everything published here comes from Maid4Condos. No review, award, statistic,
+certification, guarantee or claim was invented, review counts are the counts the
+business displays, and each recognition badge links to the real profile behind
+it. Policy amounts (a cancellation fee, a referral credit) are written in words
+rather than as figures, so no price appears anywhere on the public site.
+
+## Deployment
+
+Static hosting. Install command `npm install`, build command `npm run build`,
+output `dist/`.

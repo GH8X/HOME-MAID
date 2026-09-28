@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Maid4Condos">
+  <defs>
+    <linearGradient id="m4c-a" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a8f7d"/>
+      <stop offset="1" stop-color="#0b3f3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#m4c-a)"/>
+  <path d="M32 13.5 47 26v6.2H17V26z" fill="#fff" opacity=".96"/>
+  <path d="M20.5 34h23v14.2a2.3 2.3 0 0 1-2.3 2.3H22.8a2.3 2.3 0 0 1-2.3-2.3z" fill="#fff" opacity=".82"/>
+  <path d="M32 30.2l1.9 4.6 4.6 1.9-4.6 1.9-1.9 4.6-1.9-4.6-4.6-1.9 4.6-1.9z" fill="#0b3f3a" opacity=".9"/>
+</svg>
