@@ -1,0 +1,18 @@
+# Local configuration (credentials live here — never commit it)
+config/config.local.php
+
+# Runtime state
+storage/throttle_*.json
+storage/*.log
+
+# Uploaded media (deploy separately)
+uploads/*
+!uploads/.htaccess
+!uploads/index.html
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
