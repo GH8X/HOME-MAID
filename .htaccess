@@ -1,0 +1,86 @@
+# =============================================================================
+# Maid4Condos — Apache configuration for standard PHP hosting
+# =============================================================================
+
+Options -MultiViews -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # --- Canonical URLs -----------------------------------------------------
+    # /index.php  ->  /
+    RewriteCond %{THE_REQUEST} \s/+index\.php[\s?] [NC]
+    RewriteRule ^ / [R=301,L]
+
+    # /about.php  ->  /about   (the admin panel keeps its own filenames)
+    RewriteCond %{THE_REQUEST} \s/+([a-zA-Z0-9\-/]+)\.php[\s?] [NC]
+    RewriteCond %1 !^admin
+    RewriteCond %1 !/index$
+    RewriteRule ^ /%1 [R=301,L,NE]
+
+    # --- Extensionless public pages ----------------------------------------
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteRule ^(.+?)/?$ $1.php [L]
+
+    # --- Pretty sitemap -----------------------------------------------------
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
+</IfModule>
+
+# --- Error documents --------------------------------------------------------
+ErrorDocument 404 /404.php
+
+# --- Never serve these folders directly ------------------------------------
+# (database/ keeps its own rules so the one-time installer stays reachable)
+RedirectMatch 403 ^/(config|includes|pages|components|storage)(/|$)
+
+# --- Protect sensitive file types ------------------------------------------
+<FilesMatch "\.(sql|log|md|ini|json|lock|local\.php)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# --- Compression ------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/xml image/svg+xml
+</IfModule>
+
+# --- Browser caching --------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault                          "access plus 1 month"
+    ExpiresByType text/css                  "access plus 1 year"
+    ExpiresByType application/javascript    "access plus 1 year"
+    ExpiresByType image/jpeg                "access plus 1 year"
+    ExpiresByType image/png                 "access plus 1 year"
+    ExpiresByType image/webp                "access plus 1 year"
+    ExpiresByType image/avif                "access plus 1 year"
+    ExpiresByType image/svg+xml             "access plus 1 year"
+    ExpiresByType font/woff2                "access plus 1 year"
+    ExpiresByType text/html                 "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|jpg|jpeg|png|webp|avif|svg|woff2)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(php|html)$">
+        Header set Cache-Control "private, no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# --- PHP hardening (ignored where the host forbids php_flag) ---------------
+<IfModule mod_php.c>
+    php_flag display_errors off
+    php_flag expose_php off
+</IfModule>
